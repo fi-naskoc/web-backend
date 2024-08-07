@@ -6,7 +6,7 @@ from sqlalchemy import func
 from db import session
 import model
 
-MAX_UPLOAD_FILE_SIZE = 20 * 10**6
+MAX_UPLOAD_FILE_SIZE = 25 * 1024**2  # set to slightly larger than on FE as to prevent MB vs MiB mismatches
 MAX_UPLOAD_FILE_COUNT = 20
 
 
@@ -72,6 +72,13 @@ def seminar_repo() -> Optional[str]:
     Get the name of the seminar repository that contains tasks
     """
     return get("seminar_repo")
+
+
+def github_api_org_url() -> Optional[str]:
+    """
+    Get the name of the seminar repository that contains tasks
+    """
+    return get("github_api_org_url")
 
 
 def feedback() -> List[str]:

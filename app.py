@@ -70,6 +70,16 @@ class Authorizer(object):
         req.context['user'] = UserInfo()
 
 
+class SourceAddressFill:
+    def process_request(self, req, resp):
+        try:
+            ip = req.env['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+        except KeyError:
+            ip = req.env['REMOTE_ADDR']
+
+        req.context['source_ip'] = ip
+
+
 class Year_fill(object):
 
     # This middleware has 2 purposes:
@@ -115,20 +125,24 @@ class AddCORS:
 
 
 def log(req, resp):
-    try:
-        ip = req.env['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
-    except KeyError:
-        ip = req.env['REMOTE_ADDR']
+    user = req.context.get("user")
+    user_id = user.id if user else '_'
+    ip = req.context['source_ip']
 
-    print('[%s] [%s] [%s] [%s] %s' %
-          (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ip, req.method,
-           resp.status, req.relative_uri))
+    print(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] '
+          f'[INFO] [HTTP] '
+          f'[{ip}] '
+          f'[{req.method}] '
+          f'[{resp.status.split()[0]}] '
+          f'[{user_id}] '
+          f'{req.relative_uri}')
     sys.stdout.flush()
 
 
 class Logger(object):
-
     def process_request(self, req, resp):
+        pass
+    def process_response(self, req, resp, resource, req_succeeded):
         log(req, resp)
 
 
@@ -136,7 +150,7 @@ def log_sink(req, resp):
     resp.status = falcon.HTTP_404
 
     # Uncomment this to log sink
-    # log(req, resp)
+    log(req, resp)
 
 
 class Corser(object):
@@ -178,8 +192,8 @@ def error_handler(ex, req, resp, params):
 
 
 # Add Logger() to middleware for logging
-api = falcon.API(middleware=[JSONTranslator(), Authorizer(), Year_fill(),
-                 Corser(), AddCORS()])
+api = falcon.API(middleware=[SourceAddressFill(), JSONTranslator(), Authorizer(), Year_fill(),
+                 Corser(), AddCORS(), Logger()])
 api.add_error_handler(Exception, handler=error_handler)
 api.req_options.auto_parse_form_urlencoded = True
 
