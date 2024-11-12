@@ -1,5 +1,7 @@
 # Backend for Naskoc web
 
+⚠️⚠️ As of 2024-11-12 this repo is fully depreceated as it was merged with the repository for [fi-ksi/web-backend](https://github.com/fi-ksi/web-backend/). ⚠️⚠️
+
 [https://naskoc.fi.muni.cz](https://naskoc.fi.muni.cz/)
 
 ## Running with docker
